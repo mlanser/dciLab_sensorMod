@@ -85,7 +85,7 @@ class Sensor(_SensorBase):
 
         super().__init__(_SENSOR_TYPE_)
         self._settings = _settings
-        self._speedtest = speedtest.Speedtest(
+        self._sensor = speedtest.Speedtest(
             timeout=_settings.get('timeout', 10),
             secure=_settings.get('https', False)
         )
@@ -150,19 +150,19 @@ class Sensor(_SensorBase):
             }
 
             try:
-                self._speedtest.get_servers(servers)
-                self._speedtest.get_best_server()
+                self._sensor.get_servers(servers)
+                self._sensor.get_best_server()
 
                 if doDownload:
-                    self._speedtest.download(threads=threads)
+                    self._sensor.download(threads=threads)
 
                 if doUpload:
-                    self._speedtest.upload(threads=threads, pre_allocate=preAllocate)
+                    self._sensor.upload(threads=threads, pre_allocate=preAllocate)
 
                 if self._parse_attribs(attribs, 'share', self._settings['share']):
-                    self._speedtest.results.share()
+                    self._sensor.results.share()
 
-                response.update(self._speedtest.results.dict())
+                response.update(self._sensor.results.dict())
                 response.update([
                     ('location', self._parse_attribs(attribs, 'location', self._settings['location'])),
                     ('locationTZ', self._parse_attribs(attribs, 'locationTZ', self._settings['locationTZ']))

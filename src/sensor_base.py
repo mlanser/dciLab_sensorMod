@@ -5,8 +5,8 @@ from abc import ABC, abstractmethod
 #        M A I N   C L A S S   D E F I N I T I O N
 # =========================================================
 class _SensorBase(ABC):
-    def __init__(self, sensorType):
-        self._type = sensorType
+    def __init__(self, snsrType):
+        self._type = snsrType
 
     def __str__(self):
         return '{}'.format(self._type)

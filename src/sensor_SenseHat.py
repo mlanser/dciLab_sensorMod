@@ -47,6 +47,8 @@ _SENSOR_TYPE_: str = 'SenseHat'
 _DEFAULT_SETTINGS_ = {
     'repeat': 1,        # Number of times to run speed test
     'holdTime': 60,     # Amount of time between tests
+    'location': '- n/a -',
+    'locationTZ': 'Etc/UTC',
     'tempUnit': 'C',    # Temp display unit: 'C' (Celsius), 'F' (Fahrenheit), 'K' (Kelvin)
     'enviro': True,     # Get environmental data (i.e. temperature, humidity, and pressure)
     'IMU': True,        # Get IMU (inertial measurement unit) data (i.e. gyroscope, accelerometer, and magnetometer (compass)
@@ -62,7 +64,7 @@ class Sensor(_SensorBase):
 
         super().__init__(_SENSOR_TYPE_)
         self._settings = _settings
-        self._sensehat = SenseHat()
+        self._sensor = SenseHat()
         self._flds = _FIELD_MAP_
 
     def reset(self, attribs=None):
@@ -124,11 +126,11 @@ class Sensor(_SensorBase):
                 'gyroZ': None,
             }
 
-            self._sensehat.clear()
+            self._sensor.clear()
 
             if doEnviro:
-                tempDefault = self._sensehat.get_temperature()
-                tempHumidity = self._sensehat.get_temperature_from_humidity()
+                tempDefault = self._sensor.get_temperature()
+                tempHumidity = self._sensor.get_temperature_from_humidity()
 
                 if tempUnit == _FAHRENHEIT_:
                     response.update([
@@ -147,15 +149,15 @@ class Sensor(_SensorBase):
                     ])
 
             response.update([
-                ('humidity', self._sensehat.get_humidity()),
-                ('pressure', self._sensehat.get_pressure())
+                ('humidity', self._sensor.get_humidity()),
+                ('pressure', self._sensor.get_pressure())
             ])
 
             if doIMU:
-                orient = self._sensehat.get_orientation()
-                compass = self._sensehat.get_compass_raw()
-                accel = self._sensehat.get_accelerometer_raw()
-                gyro = self._sensehat.get_gyroscope_raw()
+                orient = self._sensor.get_orientation()
+                compass = self._sensor.get_compass_raw()
+                accel = self._sensor.get_accelerometer_raw()
+                gyro = self._sensor.get_gyroscope_raw()
 
                 response.update([
                     ('orientPitch', orient['pitch']),
