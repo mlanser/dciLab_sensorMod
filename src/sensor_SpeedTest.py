@@ -50,7 +50,12 @@ _FIELD_MAP_ = {
 # 'timestamp': '2021-04-10T21:03:38.433008Z',
 # 'upload': 26124728.949447703
 
-_SENSOR_TYPE_: str = 'speedtest'
+_SENSOR_TYPE_:  str = 'speedtest'
+_SENSOR_NAME_:  str = 'SpeedTest'
+
+_MAX_REPEAT_:   int = 10
+_MIN_HOLDTIME_: int = 60
+_MAX_TIMEOUT_:  int = 30
 
 _DEFAULT_SETTINGS_ = {
     'repeat': 1,                # Number of times to run speed test
@@ -77,16 +82,25 @@ _DEFAULT_SETTINGS_ = {
 
 
 # =========================================================
+#              H E L P E R   F U N C T I O N S
+# =========================================================
+
+
+# =========================================================
 #        M A I N   C L A S S   D E F I N I T I O N
 # =========================================================
 class Sensor(_SensorBase):
     def __init__(self, settings=None):
-        _settings = _DEFAULT_SETTINGS_ if settings is None else settings
+        _settings = _DEFAULT_SETTINGS_ if settings is None else {**_DEFAULT_SETTINGS_, **settings}
 
-        super().__init__(_SENSOR_TYPE_)
+        super().__init__(
+            sensorType=_SENSOR_TYPE_,
+            name=_SENSOR_NAME_,
+            description="Check current internet connection speed"
+        )
         self._settings = _settings
         self._sensor = speedtest.Speedtest(
-            timeout=_settings.get('timeout', 10),
+            timeout=min(_settings.get('timeout', 10), _MAX_TIMEOUT_),
             secure=_settings.get('https', False)
         )
         self._flds = _FIELD_MAP_
@@ -107,11 +121,11 @@ class Sensor(_SensorBase):
             Dict record with timestamp, ping time, download and upload speeds (bits/s), and more.
 
         Raises:
-            SpeedtestException: If 'speedtest' failed to run or experienced failure during test run.
+            OSError: If 'speedtest' failed to run or experienced failure during test run.
         """
         # Check if we need to run this test several times.
-        repeat = self._parse_attribs(attribs, 'repeat', self._settings['repeat'])
-        holdTime = self._parse_attribs(attribs, 'holdTime', self._settings['holdTime'])
+        repeat = min(self._parse_attribs(attribs, 'repeat', self._settings['repeat']), _MAX_REPEAT_)
+        holdTime = max(self._parse_attribs(attribs, 'holdTime', self._settings['holdTime']), _MIN_HOLDTIME_)
 
         # If we want to run test against a specific server,
         # then add server ID
@@ -123,7 +137,7 @@ class Sensor(_SensorBase):
         # If we want to run single-threaded test, then set to '1'. Default
         # is 'None' which then will use SpeedTest.net server config.
         tmpThreads = self._parse_attribs(attribs, 'threads', self._settings['threads'])
-        threads = 1 if tmpThreads is 1 or tmpThreads == 'single' else None
+        threads = 1 if str(tmpThreads) == '1' or tmpThreads == 'single' else None
 
         # We can skip 'upload' or 'download' test, but not both.
         doDownload = self._parse_attribs(attribs, 'download', self._settings['download'])
@@ -169,7 +183,7 @@ class Sensor(_SensorBase):
                 ])
 
             except http.client.BadStatusLine as e:
-                raise OSError("Unable to run SpeedTest!\n{}".format(e))
+                raise OSError(f"Unable to run SpeedTest!\n{e}")
 
             data.append(deepcopy(response))
 

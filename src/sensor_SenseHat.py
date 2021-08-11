@@ -42,7 +42,8 @@ _TEMP_CONVERTER_ = {
     'K2C': lambda t: (t - 273.15),
 }
 
-_SENSOR_TYPE_: str = 'SenseHat'
+_SENSOR_TYPE_: str = 'sensehat'
+_SENSOR_NAME_: str = 'SenseHat'
 
 _DEFAULT_SETTINGS_ = {
     'repeat': 1,        # Number of times to run speed test
@@ -60,9 +61,13 @@ _DEFAULT_SETTINGS_ = {
 # =========================================================
 class Sensor(_SensorBase):
     def __init__(self, settings=None):
-        _settings = _DEFAULT_SETTINGS_ if settings is None else settings
+        _settings = _DEFAULT_SETTINGS_ if settings is None else {**_DEFAULT_SETTINGS_, **settings}
 
-        super().__init__(_SENSOR_TYPE_)
+        super().__init__(
+            sensorType=_SENSOR_TYPE_,
+            name=_SENSOR_NAME_,
+            description="Get current environmental data"
+        )
         self._settings = _settings
         self._sensor = SenseHat()
         self._flds = _FIELD_MAP_

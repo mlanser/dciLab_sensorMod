@@ -5,14 +5,16 @@ from abc import ABC, abstractmethod
 #        M A I N   C L A S S   D E F I N I T I O N
 # =========================================================
 class _SensorBase(ABC):
-    def __init__(self, snsrType):
-        self._type = snsrType
+    def __init__(self, sensorType: str, name: str, description: str = None):
+        self._type = sensorType
+        self._name = name
+        self._desc = description
 
     def __str__(self):
-        return '{}'.format(self._type)
+        return f"{self._type}"
 
     def __repr__(self):
-        return "TYPE: '{}'".format(self._type)
+        return f"TYPE: '{self._type}'"
 
     @staticmethod
     def _parse_attribs(attribs, key, default=None):
@@ -24,6 +26,14 @@ class _SensorBase(ABC):
     @property
     def type(self):
         return self._type
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def description(self):
+        return self._desc
 
     @abstractmethod
     def reset(self, attribs=None):
